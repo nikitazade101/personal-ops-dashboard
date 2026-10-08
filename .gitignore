@@ -1,0 +1,16 @@
+# splice backups written by the Python helpers
+*.preedit
+
+# macOS
+.DS_Store
+
+# editor / OS cruft
+*.swp
+*~
+
+# local scratch/test dirs
+.skeltest*/
+.dbg*/
+
+# node (only if you add tooling later)
+node_modules/
