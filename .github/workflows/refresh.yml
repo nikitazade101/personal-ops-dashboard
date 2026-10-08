@@ -1,0 +1,68 @@
+name: dashboard-refresh
+
+on:
+  schedule:
+    - cron: "45 6 * * 1-5"   # 06:45 UTC, Mon–Fri. Adjust for your timezone.
+  workflow_dispatch: {}       # manual "Run workflow" button
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dashboard-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node (for the validity check)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Gather sources
+        env:
+          TICKETS_TOKEN: ${{ secrets.TICKETS_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p .refresh
+          # Replace with your real source calls that write JSON into .refresh/
+          [ -f .refresh/tickets.json ] || echo '[]' > .refresh/tickets.json
+          [ -f .refresh/intel.json ]   || echo '[]' > .refresh/intel.json
+
+      - name: Splice data
+        run: |
+          set -euo pipefail
+          [ -s .refresh/tickets.json ] && \
+            python3 scripts/data_splice.py dashboard-data.js tickets .refresh/tickets.json || true
+          [ -s .refresh/intel.json ] && \
+            python3 scripts/data_splice.py dashboard-data.js intel .refresh/intel.json || true
+          rm -rf .refresh dashboard-data.js.preedit
+
+      - name: Bump version (lockstep)
+        run: bash scripts/bump_version.sh dashboard.html
+
+      - name: Verify data file parses
+        run: node --check dashboard-data.js
+
+      - name: Commit refreshed data
+        run: |
+          set -euo pipefail
+          git config user.name  "dashboard-refresh"
+          git config user.email "dashboard-refresh@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes — quiet run."
+          else
+            git add dashboard-data.js dashboard.html
+            git commit -m "chore: daily dashboard refresh $(date -u +%F)"
+            git push
+          fi
