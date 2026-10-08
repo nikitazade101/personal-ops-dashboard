@@ -1,0 +1,65 @@
+/* =============================================================================
+ * theme-dark.css — optional DARK variant for the Personal Ops Dashboard.
+ * -----------------------------------------------------------------------------
+ * The whole app is themed through ~15 CSS variables in dashboard.html's :root.
+ * This file re-declares those same variables for a dark palette. Because the
+ * renderers NEVER hardcode colours (they use var(--…) everywhere), dropping
+ * this in re-themes every section — cards, badges, hero, tables, banners.
+ *
+ * HOW TO USE (pick one):
+ *
+ *  A) Always dark — add ONE line in dashboard.html's <head>, AFTER the inline
+ *     <style> block so it wins the cascade:
+ *         <link rel="stylesheet" href="theme-dark.css">
+ *
+ *  B) Respect the OS setting — wrap the body below in a media query instead
+ *     (uncomment the @media lines) so it only applies when the user's system
+ *     is in dark mode and the light theme stays the default otherwise.
+ *
+ *  C) Toggle at runtime — add a button that does
+ *         document.documentElement.classList.toggle('dark')
+ *     and change the selector below from :root to :root.dark.
+ * ========================================================================== */
+
+/* --- Variant A/C: force dark (change ":root" to ":root.dark" for toggle) --- */
+:root{
+  --bg:#0f1923;            /* deep slate canvas */
+  --bg2:#13202c;           /* secondary wash */
+  --card:#1a2733;          /* card surface */
+  --card2:#223240;         /* muted panel / input fill */
+  --text:#e6edf6;          /* primary text */
+  --muted:#8aa0b4;         /* secondary text */
+  --border:#2b3b4a;        /* borders */
+  --accent:#38bdf8;        /* primary accent (links, active nav, buttons) */
+  --accent2:#a78bfa;       /* secondary accent */
+  --sage:#86b36b;--apricot:#e0a94e;--blush:#e08a76;
+  --green:#4ade80;--amber:#fbbf24;--grey:#94a3b8;--purple:#c084fc;
+  --red:#f87171;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--danger:#f87171;
+}
+
+/* Dark canvas gets a subtle multi-stop glow instead of the light wash. */
+body{
+  background:var(--bg) !important;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(56,189,248,.10) 0%, transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(167,139,250,.10) 0%, transparent 40%),
+    radial-gradient(circle at 78% 85%, rgba(74,222,128,.08) 0%, transparent 45%) !important;
+}
+
+/* Badges: on dark, the tinted-background + bright-text pairing reads better. */
+.b-green{background:rgba(74,222,128,.16);color:#4ade80}
+.b-amber{background:rgba(251,191,36,.16);color:#fbbf24}
+.b-grey{background:rgba(148,163,184,.16);color:#cbd5e1}
+.b-purple{background:rgba(192,132,252,.18);color:#c084fc}
+.b-red{background:rgba(248,113,113,.16);color:#f87171}
+.b-blue{background:rgba(56,189,248,.16);color:#38bdf8}
+
+/* Hero gradient tuned for dark. */
+.hero{background:linear-gradient(120deg,rgba(56,189,248,.14),rgba(167,139,250,.12) 55%,rgba(74,222,128,.10)) !important}
+
+/* --- Variant B: OS-driven. Uncomment to apply dark ONLY in OS dark mode.
+@media (prefers-color-scheme: dark){
+  :root{ ...copy the variable block above... }
+  body{ ...copy the body block above... }
+}
+--- */

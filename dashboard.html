@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Ops Dashboard</title>
+<!-- Generic rounded-square favicon (no org branding) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%232fa5b5'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='%23ffffff' font-family='sans-serif'>◆</text></svg>">
+<style>
+:root{
+/* 🎨 Default theme — soft "watercolour" palette. Swap these 15 vars to re-theme the whole app. */
+--bg:#faf8df;              /* page canvas */
+--bg2:#fce1d7;             /* secondary wash */
+--card:#fffdf6;            /* card surface */
+--card2:#f3f0e0;           /* muted panel / input fill */
+--text:#3a3550;            /* primary text */
+--muted:#8a7f94;           /* secondary text */
+--border:#e6ddc9;          /* borders */
+--accent:#2fa5b5;          /* primary accent (links, active nav, buttons) */
+--accent2:#9a8fd4;         /* secondary accent */
+--sage:#a9c08a;--apricot:#e0a94e;--blush:#e89b86;
+--green:#6fae5f;--amber:#d9922e;--grey:#9a8f8a;--purple:#9a8fd4;--red:#d4604f;--ok:#6fae5f;--warn:#d9922e;--info:#3b82f6;--danger:#d4604f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);
+background-image:
+ radial-gradient(circle at 12% 8%, rgba(154,143,212,.18) 0%, transparent 42%),
+ radial-gradient(circle at 88% 12%, rgba(224,169,78,.16) 0%, transparent 40%),
+ radial-gradient(circle at 78% 85%, rgba(47,165,181,.14) 0%, transparent 45%),
+ radial-gradient(circle at 20% 90%, rgba(169,192,138,.18) 0%, transparent 48%);
+background-attachment:fixed;
+color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;min-height:100vh}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.sidebar{width:210px;background:linear-gradient(180deg,rgba(154,143,212,.14),rgba(252,225,215,.20));backdrop-filter:blur(4px);border-right:1px solid var(--border);padding:14px 0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.sidebar h1{font-size:1rem;padding:0 16px 12px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.navitem{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:.84rem;color:var(--muted);border-left:3px solid transparent}
+.navitem:hover{background:rgba(47,165,181,.10);color:var(--text)}
+.navitem.active{background:rgba(47,165,181,.16);color:var(--text);font-weight:600;border-left-color:var(--accent)}
+.sidebtns{padding:12px 16px;border-top:1px solid var(--border);margin-top:8px}
+.main{flex:1;padding:20px 26px;overflow-x:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.topbar input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;width:280px;font-size:.85rem}
+.btn{background:var(--accent);color:#fff;border:none;padding:7px 13px;border-radius:7px;cursor:pointer;font-size:.8rem;font-weight:600}
+.btn:hover{filter:brightness(1.1)}.btn.sm{padding:4px 9px;font-size:.72rem}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.section{display:none}.section.active{display:block}
+h2.title{font-size:1.25rem;margin-bottom:4px}.sub{color:var(--muted);font-size:.8rem;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:.82rem}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--card2);color:var(--muted);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--text)}tr:last-child td{border-bottom:none}tr:hover td{background:rgba(47,165,181,.06)}
+.badge{display:inline-block;padding:2px 8px;border-radius:11px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.b-green{background:rgba(111,174,95,.22);color:#4a7a3c}.b-amber{background:rgba(217,146,46,.22);color:#9c6412}
+.b-grey{background:rgba(154,143,138,.22);color:#6a6058}.b-purple{background:rgba(154,143,212,.24);color:#6a5fae}
+.b-red{background:rgba(212,96,79,.22);color:#a63a2a}.b-blue{background:rgba(47,165,181,.20);color:#1d7a87}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;box-shadow:0 3px 14px rgba(224,169,78,.08)}
+.stat:hover{border-color:var(--accent);box-shadow:0 5px 20px rgba(47,165,181,.16)}.stat-val{font-size:1.7rem;font-weight:700;color:var(--text)}.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:0 4px 18px rgba(154,143,212,.10),0 1px 3px rgba(58,53,80,.05)}
+.card h3{font-size:.85rem;margin-bottom:9px}
+.hero{background:linear-gradient(120deg,rgba(154,143,212,.28),rgba(252,225,215,.40) 55%,rgba(224,169,78,.28));border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 6px 22px rgba(154,143,212,.14)}
+.rowact{display:flex;gap:5px}.iconbtn{cursor:pointer;opacity:.7;font-size:.85rem}.iconbtn:hover{opacity:1}
+.banner{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.banner.gap{border-left-color:var(--warn)}
+.pill{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;margin:3px 4px 3px 0;font-size:.75rem}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:520px;max-width:92vw;max-height:88vh;overflow-y:auto}
+.modal h3{margin-bottom:14px}.field{margin-bottom:11px}.field label{display:block;font-size:.74rem;color:var(--muted);margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.83rem}
+.field textarea{min-height:60px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.empty{color:var(--muted);padding:20px;text-align:center;font-size:.85rem}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <h1>◆ Dashboard</h1>
+  <div id="nav"></div>
+  <div class="sidebtns">
+    <button class="btn ghost sm" style="width:100%" onclick="resetData()">↺ Reset Data</button>
+  </div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div><h2 class="title" id="sec-title">Overview</h2><div class="sub" id="sec-sub"></div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="search" placeholder="🔍 Search all sections…" oninput="runSearch(this.value)">
+    </div>
+  </div>
+  <div id="search-results" class="section"></div>
+  <div id="sections"></div>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal"><h3 id="modal-title">Edit</h3><div id="modal-fields"></div>
+  <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveModal()">Save</button></div>
+</div></div>
+
+<!-- ⚠️ cache-bust LOCKSTEP: this ?v= MUST equal DATA_VERSION below. Bump both together. -->
+<script src="dashboard-data.js?v=1"></script>
+<script>
+const DB="ops_dashboard_v1", DATA_VERSION=1;   // ⚠️ keep DATA_VERSION == the ?v= on the data script above
+
+/* ---------- persistence (localStorage, re-seedable from SEED_DATA) ---------- */
+function load(){const v=localStorage.getItem(DB+"_ver");if(!v||+v<DATA_VERSION){localStorage.removeItem(DB);localStorage.setItem(DB+"_ver",DATA_VERSION);}
+  const d=localStorage.getItem(DB);return d?JSON.parse(d):(localStorage.setItem(DB,JSON.stringify(SEED_DATA)),JSON.parse(JSON.stringify(SEED_DATA)));}
+function save(db){localStorage.setItem(DB,JSON.stringify(db));}
+function resetData(){if(confirm("Reload all data from dashboard-data.js? Local edits will be lost.")){localStorage.removeItem(DB);localStorage.setItem(DB,JSON.stringify(SEED_DATA));render();}}
+
+/* ---------- tiny helpers ---------- */
+function esc(s){return(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function pct(a){return a||a===0?Math.round(a*100)+"%":"";}
+// 🔗 Link templates — point these at YOUR systems (Jira, GitHub, ServiceNow, Linear, …).
+const LINKS={ ticket:"https://example.com/issue/", case:"https://example.com/case/" };
+function idLink(s){return s?`<a href="${LINKS.ticket}${esc(s)}" target="_blank">${esc(s)}</a>`:"";}
+function caseLink(c){return /^[A-Za-z0-9_-]{4,}$/.test(c||"")?`<a href="${LINKS.case}${esc(c)}" target="_blank">${esc(c)}</a>`:esc(c);}
+function roleBadge(r){r=r||"";let c="b-grey";if(/Primary|Lead|Owner/i.test(r))c="b-green";else if(/Secondary|Backup/i.test(r))c="b-amber";else if(/Standby|Watch/i.test(r))c="b-purple";return `<span class="badge ${c}">${esc(r)}</span>`;}
+function statusBadge(s){const m={active:"b-green",completed:"b-blue",overdue:"b-red",ongoing:"b-green",achieved:"b-green",open:"b-amber",pending:"b-amber",done:"b-blue"};return `<span class="badge ${m[(s||"").toLowerCase()]||"b-grey"}">${esc(s)}</span>`;}
+function sevColor(sev){if(sev===1||sev===2)return "var(--danger)";if(sev===3)return "var(--warn)";if(sev===4||sev===5)return "var(--info)";return "var(--muted)";}
+
+/* ---------- SECTION CONFIG — add a line here to add a sidebar section ---------- */
+const SECTIONS=[
+ {key:"overview",label:"Overview",icon:"🏠",custom:true},
+ {key:"tasks",label:"Daily Tasks",icon:"✅",custom:true,sub:"Auto-compiled — mentions, tickets, tasks, email"},
+ {key:"cases",label:"Cases",icon:"🎫",custom:true,sub:"Open items per entity — metrics (auto) + live list (on-demand)"},
+ {key:"tickets",label:"My Tickets",icon:"📨",custom:true,sub:"Tickets assigned to you"},
+ {key:"trainings",label:"Trainings",icon:"📚",custom:true,sub:"Pending / assigned learning"},
+ {key:"entities",label:"Entities",icon:"🛠️",type:"table",sub:"Your tracked customers / clients / projects / assets",
+  cols:[["name","Name"],["kind","Type"],["role","Role",roleBadge],["allocation","Alloc",pct],["tags","Tags"],["period","Period",null,r=>`${esc(r.start||"")} → ${esc(r.end||"")}`],["region","Region"],["status","Status",statusBadge],["ticket","Ref",idLink]],
+  fields:["name","ticket","role","kind","allocation","tags","region","start","end","status","notes"]},
+ {key:"oncall",label:"On-call",icon:"📟",custom:true,sub:"Rotation memberships + live duty"},
+ {key:"goals",label:"Wins",icon:"🏆",custom:true,sub:"Achievements / review highlights"},
+ {key:"projects",label:"Projects",icon:"📦",custom:true,sub:"Active initiatives"},
+ {key:"reviews",label:"Reviews",icon:"📋",type:"table",sub:"Workload / design / incident reviews",
+  cols:[["entity","Entity"],["topic","Topic"],["ticket","Ref",idLink],["status","Status",statusBadge],["date","Date"],["owner","Owner"],["notes","Notes"]],
+  fields:["entity","topic","ticket","status","date","owner","notes"]},
+ {key:"skills",label:"Certs",icon:"🎓",custom:true,sub:"Skills & certifications"},
+ {key:"intel",label:"Intel",icon:"🧭",custom:true,sub:"Per-entity rollup — auto-synthesised daily from your sources"},
+ {key:"risks",label:"Risks",icon:"⚠️",custom:true,sub:"Aggregated risk register"},
+ {key:"links",label:"Links",icon:"🔗",custom:true,sub:"Quick links"}
+];
+const FIELD_LABELS={name:"Name",ticket:"Ticket / Ref",role:"Role",kind:"Type",allocation:"Allocation (0–1)",tags:"Tags",region:"Region",start:"Start",end:"End",status:"Status",notes:"Notes",topic:"Topic",date:"Date",owner:"Owner",entity:"Entity",label:"Label",url:"URL",icon:"Icon",description:"Description",link:"Link",title:"Title",issuer:"Issuer",level:"Level",badge:"Badge URL",img:"Image URL"};
+
+let cur="overview", sortState={};
+
+/* ---------- shell ---------- */
+function buildNav(){document.getElementById("nav").innerHTML=SECTIONS.map(s=>`<div class="navitem${s.key===cur?' active':''}" onclick="nav('${s.key}')">${s.icon} ${s.label}</div>`).join("");}
+function nav(k){cur=k;document.getElementById("search").value="";document.getElementById("search-results").classList.remove("active");render();}
+function render(){buildNav();const db=load();const sec=SECTIONS.find(s=>s.key===cur);
+  if(window.__ocTimer){clearInterval(window.__ocTimer);window.__ocTimer=null;}
+  document.getElementById("sec-title").textContent=sec.icon+" "+sec.label;
+  document.getElementById("sec-sub").textContent=sec.sub||"";
+  const host=document.getElementById("sections");host.innerHTML="";
+  const sb=staleBanner(db);if(sb)host.insertAdjacentHTML("beforeend",sb);
+  const div=document.createElement("div");div.className="section active";host.appendChild(div);
+  if(sec.custom){renderCustom(sec.key,div,db);}else{renderTable(sec,div,db);}
+}
+function staleBanner(db){
+  const g=db.generatedAt||(db.cases&&db.cases.updated)||db.intelUpdated;if(!g)return "";
+  const days=Math.floor((Date.now()-new Date(g).getTime())/86400000);if(isNaN(days)||days<2)return "";
+  const col=days>=7?"var(--red)":"var(--amber)";const word=days>=7?"stale":"ageing";
+  return `<div style="background:${col}22;border:1px solid ${col};color:${col};border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.8rem">⏳ Dashboard data is <strong>${days} days old</strong> (${word}) — last refresh ${new Date(g).toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}. Run the refresh job.</div>`;
+}
+
+/* ---------- generic table renderer (sort / add / edit / delete / CSV) ---------- */
+function renderTable(sec,div,db){const rows=db[sec.key]||[];
+  const ss=sortState[sec.key];let view=rows.map((r,i)=>({r,i}));
+  if(ss){view.sort((a,b)=>{let x=a.r[ss.col]??"",y=b.r[ss.col]??"";if(typeof x==="number"&&typeof y==="number")return ss.dir*(x-y);return ss.dir*String(x).localeCompare(String(y));});}
+  let h=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn sm" onclick="openModal('${sec.key}',-1)">+ Add</button><button class="btn ghost sm" onclick="exportCSV('${sec.key}')">⬇ CSV</button></div>`;
+  if(!rows.length){h+=`<div class="empty">No ${sec.label} yet. Click + Add.</div>`;div.innerHTML=h;return;}
+  h+="<table><thead><tr>"+sec.cols.map(c=>`<th onclick="sortBy('${sec.key}','${c[0]}')">${c[1]}${ss&&ss.col===c[0]?(ss.dir>0?" ▲":" ▼"):""}</th>`).join("")+"<th>Actions</th></tr></thead><tbody>";
+  view.forEach(({r,i})=>{h+="<tr>"+sec.cols.map(c=>{const[k,,fmt,rowfn]=c;let v=rowfn?rowfn(r):(fmt?fmt(r[k]):esc(r[k]));return `<td>${v??""}</td>`;}).join("")+
+    `<td><div class="rowact"><span class="iconbtn" title="Edit" onclick="openModal('${sec.key}',${i})">✏️</span><span class="iconbtn" title="Delete" onclick="delRow('${sec.key}',${i})">🗑️</span></div></td></tr>`;});
+  h+="</tbody></table>";div.innerHTML=h;}
+function sortBy(key,col){const s=sortState[key];sortState[key]=s&&s.col===col?{col,dir:-s.dir}:{col,dir:1};render();}
+function delRow(key,i){if(confirm("Delete this row?")){const db=load();db[key].splice(i,1);save(db);render();}}
+function openModal(key,idx){const sec=SECTIONS.find(s=>s.key===key);const db=load();const rec=idx>=0?db[key][idx]:{};
+  document.getElementById("modal-title").textContent=(idx>=0?"Edit ":"Add ")+sec.label;
+  document.getElementById("modal-fields").innerHTML=sec.fields.map(f=>{const val=esc(rec[f]??"");
+    if(f==="notes"||f==="description")return `<div class="field"><label>${FIELD_LABELS[f]||f}</label><textarea data-f="${f}">${val}</textarea></div>`;
+    return `<div class="field"><label>${FIELD_LABELS[f]||f}</label><input data-f="${f}" value="${val}"></div>`;}).join("");
+  const bg=document.getElementById("modal-bg");bg.classList.add("open");bg.dataset.key=key;bg.dataset.idx=idx;}
+function closeModal(){document.getElementById("modal-bg").classList.remove("open");}
+function saveModal(){const bg=document.getElementById("modal-bg");const key=bg.dataset.key,idx=+bg.dataset.idx;const db=load();
+  const rec=idx>=0?db[key][idx]:{};
+  bg.querySelectorAll("[data-f]").forEach(el=>{const f=el.dataset.f;let v=el.value;if(f==="allocation")v=v===""?0:parseFloat(v);rec[f]=v;});
+  if(idx<0)db[key].push(rec);save(db);closeModal();render();}
+function exportCSV(key){const sec=SECTIONS.find(s=>s.key===key);const rows=load()[key]||[];const cols=sec.fields;
+  const csv=[cols.join(",")].concat(rows.map(r=>cols.map(c=>`"${String(r[c]??"").replace(/"/g,'""')}"`).join(","))).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=key+".csv";a.click();}
+
+/* ---------- global search ---------- */
+function runSearch(q){const sr=document.getElementById("search-results");q=q.trim().toLowerCase();
+  if(!q){sr.classList.remove("active");render();return;}
+  const db=load();const hits=[];
+  SECTIONS.forEach(s=>{(db[s.key]||[]).forEach?.((r,i)=>{const blob=JSON.stringify(r).toLowerCase();if(blob.includes(q))hits.push({sec:s,r,i});});});
+  document.getElementById("sections").innerHTML="";sr.classList.add("active");
+  sr.innerHTML=`<h2 class="title">🔍 ${hits.length} result(s)</h2>`+hits.map(h=>`<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="nav('${h.sec.sec?.key||h.sec.key}')"><strong>${h.sec.icon} ${h.sec.label}</strong> — ${esc(JSON.stringify(h.r).slice(0,160))}</div>`).join("")||`<div class="empty">No matches.</div>`;}
+
+/* ---------- custom renderers dispatch ---------- */
+function renderCustom(key,div,db){
+  if(key==="overview")return renderOverview(div,db);
+  if(key==="tasks")return renderTasks(div,db);
+  if(key==="cases")return renderCases(div,db);
+  if(key==="tickets")return renderTickets(div,db);
+  if(key==="trainings")return renderTrainings(div,db);
+  if(key==="intel")return renderIntelCards(div,db);
+  if(key==="oncall")return renderOncall(div,db);
+  if(key==="risks")return renderRiskRegister(div,db);
+  if(key==="links")return renderLinks(div,db);
+  if(key==="projects")return renderCards(div,db,"projects",r=>`<div class="card"><h3>${esc(r.name)} ${statusBadge(r.status)}</h3><p style="font-size:.8rem;color:var(--muted)">${esc(r.description)}</p>${r.link?`<p style="margin-top:6px"><a href="${esc(r.link)}" target="_blank">Open ↗</a></p>`:""}</div>`,["name","status","description","link"]);
+  if(key==="goals")return renderCards(div,db,"goals",r=>`<div class="card"><h3>${esc(r.title)} ${statusBadge(r.status)}</h3><div style="font-size:.8rem;color:var(--muted)">${esc(r.notes||"")}</div></div>`,["title","status","notes"]);
+  if(key==="skills")return renderCards(div,db,"skills",r=>`<div class="card" style="text-align:center">${r.img?`<img src="${esc(r.img)}" style="height:64px">`:"🎓"}<h3>${esc(r.name)}</h3><div style="font-size:.74rem;color:var(--muted)">${esc(r.issuer)} · ${esc(r.level||"")} · ${esc(r.date||"")}</div>${r.badge?`<p style="margin-top:6px"><a href="${esc(r.badge)}" target="_blank">Verify ↗</a></p>`:""}</div>`,["name","issuer","level","date","badge","img"]);
+}
+function renderCards(div,db,key,tmpl,fields,emptyMsg){const rows=db[key]||[];
+  const fjson=JSON.stringify(fields).replace(/"/g,'&quot;');
+  let h=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn sm" onclick="openModalCustom('${key}',${fjson})">+ Add</button></div>`;
+  h+=rows.length?`<div class="grid3">${rows.map((r,i)=>tmpl(r).replace("</div>",`<div class="rowact" style="margin-top:8px"><span class="iconbtn" onclick="openModalCustom('${key}',${fjson},${i})">✏️</span><span class="iconbtn" onclick="delRow('${key}',${i})">🗑️</span></div></div>`)).join("")}</div>`:`<div class="empty">${emptyMsg||"Nothing here yet. Click + Add."}</div>`;
+  div.innerHTML=h;}
+function openModalCustom(key,fields,idx){const db=load();const rec=idx>=0?db[key][idx]:{};
+  document.getElementById("modal-title").textContent=(idx>=0?"Edit":"Add");
+  document.getElementById("modal-fields").innerHTML=fields.map(f=>{const val=esc(rec[f]??"");
+    return (f==="notes"||f==="description")?`<div class="field"><label>${FIELD_LABELS[f]||f}</label><textarea data-f="${f}">${val}</textarea></div>`:`<div class="field"><label>${FIELD_LABELS[f]||f}</label><input data-f="${f}" value="${val}"></div>`;}).join("");
+  const bg=document.getElementById("modal-bg");bg.classList.add("open");bg.dataset.key=key;bg.dataset.idx=idx;}
+
+/* ---------- Overview ---------- */
+function weekAgenda(db){
+  const now=new Date();const dow=now.getDay();const items=[];
+  const daysToFri=(5-dow+7)%7;const fri=new Date(now);fri.setDate(now.getDate()+daysToFri);
+  items.push({when:daysToFri===0?"Today":fri.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),icon:"📄",text:"Weekly report due",tag:daysToFri<=1?"soon":""});
+  (db.standbys||[]).forEach(s=>{const d=new Date(s.date);if(isNaN(d))return;const diff=Math.ceil((d-now)/86400000);if(diff>=0&&diff<=7)items.push({when:d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),icon:"📡",text:`Standby — ${esc(s.entity||s.customer||"")} ${esc(s.time||"")}`,tag:diff<=1?"soon":""});});
+  let h=`<div class="card" style="margin-top:14px"><h3 style="margin:0">🗓️ This Week</h3><div style="margin-top:8px">`;
+  h+=items.map(it=>`<div style="display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border);font-size:.8rem"><span style="width:120px;flex:none;color:var(--accent);font-variant-numeric:tabular-nums">${it.when}</span><span style="flex:1">${it.icon} ${it.text}</span>${it.tag==="soon"?'<span class="badge b-red">soon</span>':""}</div>`).join("")+`</div></div>`;
+  return h;
+}
+function renderOverview(div,db){
+  const a=(db.entities||[]).filter(r=>r.status==="active");
+  const totAlloc=(db.entities||[]).filter(e=>e.status!=="completed").reduce((x,e)=>x+(+e.allocation||0),0);
+  const now=new Date();const hr=now.getHours();const greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
+  const name=db.ownerName||db.ownerAlias||"there";
+  const intel=db.intel||[];
+  const openCases=intel.reduce((x,i)=>{const m=String(i.cases||i.openCases||"").match(/\d+/);return x+(m?+m[0]:0);},0);
+  let h=`<div class="hero" style="display:flex;align-items:center;gap:14px;border-left:5px solid var(--accent);padding:16px 20px">
+    <div style="flex:none;font-size:2rem">◆</div>
+    <div style="flex:1"><h2 style="margin:0 0 4px;color:var(--text)">${greet}, ${esc(name)}</h2>
+    <div style="color:var(--muted);font-size:.8rem">${now.toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}${db.ownerAlias?" · "+esc(db.ownerAlias):""}</div></div></div>`;
+  h+=`<div class="stats">
+    <div class="stat" onclick="nav('entities')"><div class="stat-val">${a.length}</div><div class="stat-lbl">Active Entities</div></div>
+    <div class="stat" onclick="nav('cases')"><div class="stat-val">${openCases||"0"}</div><div class="stat-lbl">Open Cases</div></div>
+    <div class="stat" onclick="nav('tickets')"><div class="stat-val">${(db.tickets||[]).length}</div><div class="stat-lbl">My Tickets</div></div>
+    <div class="stat" onclick="nav('projects')"><div class="stat-val">${(db.projects||[]).length}</div><div class="stat-lbl">Projects</div></div>
+    <div class="stat"><div class="stat-val">${Math.round(totAlloc*100)}%</div><div class="stat-lbl">Allocation</div></div>
+  </div>`;
+  // capacity bar (0–100%)
+  const capPct=Math.min(100,Math.round(totAlloc*100));const capCol=capPct>100?"var(--red)":capPct>=90?"var(--amber)":"var(--green)";
+  h+=`<div class="card"><h3>Capacity</h3><div style="background:var(--card2);border-radius:6px;height:22px;overflow:hidden"><div style="height:100%;width:${capPct}%;background:${capCol};transition:width .4s"></div></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">${capPct}% committed</div></div>`;
+  h+=weekAgenda(db);
+  div.innerHTML=h;
+}
+
+/* ---------- Daily Tasks (auto-compiled list grouped by source) ---------- */
+function renderTasks(div,db){const t=db.tasks||[];const upd=db.tasksUpdated||"";
+  const icons={Message:"💬",Ticket:"🎫",Task:"📋",Email:"✉️",Oncall:"📟",Case:"🆕",Other:"•"};
+  let h=`<div class="sub" style="margin-bottom:10px">Compiled ${esc(upd)||"—"} · ${t.length} item(s)</div>`;
+  if(!t.length){h+=`<div class="empty">No items yet — your refresh job will populate mentions, tickets, tasks & email here.</div>`;div.innerHTML=h;return;}
+  const groups={};t.forEach(x=>{const g=x.source||"Other";(groups[g]=groups[g]||[]).push(x);});
+  Object.keys(groups).forEach(g=>{h+=`<div class="card" style="margin-bottom:10px"><h3>${icons[g]||"•"} ${esc(g)} (${groups[g].length})</h3>`+
+    groups[g].map(x=>{const hi=/high|urgent|p1|p2|sev[- ]?1|sev[- ]?2/i.test(x.priority||"");const badge=x.priority?`<span class="badge ${hi?'b-red':'b-grey'}">${esc(x.priority)}</span> `:"";const body=x.link?`<a href="${esc(x.link)}" target="_blank">${esc(x.text)}</a>`:esc(x.text);return `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem">${badge}${body}${x.from?` <span style="color:var(--muted)">— ${esc(x.from)}</span>`:""}</div>`;}).join("")+`</div>`;});
+  div.innerHTML=h;}
+
+/* ---------- Cases (metrics per entity + optional live list) ---------- */
+function renderCases(div,db){
+  const obj=db.cases||{customers:[]};const custs=obj.customers||[];const upd=obj.updated||"";
+  let h=`<div class="banner"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap">
+    <div><h3 style="margin:0;font-size:.9rem">🎫 Cases by entity</h3><div style="font-size:.7rem;color:var(--muted);margin-top:3px">Aggregated metrics (auto). ${upd?"Last refresh "+esc(upd):"Awaiting first refresh."}</div></div>
+    <button class="btn sm" onclick="alert('Live case list is an on-demand pull in your refresh tooling.')">🔄 Refresh now</button></div></div>`;
+  if(!custs.length){div.innerHTML=h+`<div class="empty">No entities configured. Add them to SEED_DATA.cases.customers.</div>`;return;}
+  // portfolio rollup strip
+  const roll={d7:0,d30:0,d90:0,ytd:0};custs.forEach(c=>{const w=c.windows||{};roll.d7+=w["7d"]?.total||0;roll.d30+=w["30d"]?.total||0;roll.d90+=w["90d"]?.total||0;roll.ytd+=w.ytd?.total||0;});
+  h+=`<div class="stats">${[["7d",roll.d7],["30d",roll.d30],["90d",roll.d90],["YTD",roll.ytd]].map(([k,v])=>`<div class="stat"><div class="stat-val">${v}</div><div class="stat-lbl">${k} total</div></div>`).join("")}</div>`;
+  h+=`<table><thead><tr><th>Entity</th><th>7d</th><th>30d</th><th>90d</th><th>YTD</th><th>Severity (30d)</th><th>Top service</th></tr></thead><tbody>`;
+  custs.forEach(c=>{const w=c.windows||{};const s30=w["30d"]||{};const sevStr=[1,2,3,4,5].map(i=>s30["sev"+i]?`S${i}:${s30["sev"+i]}`:"").filter(Boolean).join(" ")||"—";
+    const top=(c.topServices||[])[0];
+    h+=`<tr><td><strong>${esc(c.name||c.customer)}</strong></td><td>${w["7d"]?.total??0}</td><td>${s30.total??0}</td><td>${w["90d"]?.total??0}</td><td>${w.ytd?.total??0}</td><td style="font-size:.74rem">${esc(sevStr)}</td><td style="font-size:.76rem">${top?esc(top.service)+" ("+top.total+")":"—"}</td></tr>`;});
+  h+=`</tbody></table>`;div.innerHTML=h;
+}
+
+/* ---------- My Tickets ---------- */
+function renderTickets(div,db){const rows=db.tickets||[];
+  let h=`<div class="sub" style="margin-bottom:10px">${rows.length} ticket(s) assigned to you.</div>`;
+  if(!rows.length){h+=`<div class="empty">No tickets — your refresh job populates these from your ticketing system.</div>`;div.innerHTML=h;return;}
+  h+=`<table><thead><tr><th>Ref</th><th>Title</th><th>Entity</th><th>Sev</th><th>Status</th><th>Due</th></tr></thead><tbody>`;
+  rows.forEach(r=>{h+=`<tr><td>${idLink(r.id)}</td><td style="font-size:.8rem">${esc(r.title)}</td><td>${esc(r.entity||"")}</td><td>${r.sev?`<span class="badge" style="background:${sevColor(+r.sev)};color:#fff">Sev${esc(r.sev)}</span>`:"—"}</td><td>${statusBadge(r.status)}</td><td>${esc(r.due||"")}</td></tr>`;});
+  h+=`</tbody></table>`;div.innerHTML=h;}
+
+/* ---------- Trainings (manual list + quick add) ---------- */
+function renderTrainings(div,db){const rows=db.trainings||[];const fields=["name","due","status","link"];const fjson=JSON.stringify(fields).replace(/"/g,'&quot;');
+  let h=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn sm" onclick="openModalCustom('trainings',${fjson})">+ Add</button></div>`;
+  if(!rows.length){h+=`<div class="empty">No trainings yet. Click + Add.</div>`;div.innerHTML=h;return;}
+  h+=`<div class="grid3">`+rows.map((r,i)=>`<div class="card"><h3>${r.link?`<a href="${esc(r.link)}" target="_blank">${esc(r.name)} ↗</a>`:esc(r.name)}</h3><div>${statusBadge(r.status)}</div><div style="font-size:.74rem;color:var(--muted);margin-top:4px">${esc(r.due||"")}</div><div class="rowact" style="margin-top:8px"><span class="iconbtn" onclick="openModalCustom('trainings',${fjson},${i})">✏️</span><span class="iconbtn" onclick="delRow('trainings',${i})">🗑️</span></div></div>`).join("")+`</div>`;
+  div.innerHTML=h;}
+
+/* ---------- On-call ---------- */
+function renderOncall(div,db){const duty=db.oncallDuty||[];const up=db.oncallUpcoming||[];
+  let h=`<div class="card"><h3>📟 Current duty</h3>`;
+  h+=duty.length?duty.map(d=>`<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:.82rem"><strong>${esc(d.entity||d.customer||"")}</strong> — ${esc(d.person)} <span class="badge b-blue">${esc(d.shift||"")}</span></div>`).join(""):`<div class="empty">No duty data.</div>`;
+  h+=`</div>`;
+  if(up.length){h+=`<div class="card" style="margin-top:12px"><h3>Upcoming</h3>`+up.map(u=>`<div style="padding:4px 0;font-size:.8rem">${esc(u.day||"")} — ${esc(u.entity||u.customer||"")} ${esc(u.shift||"")} <span style="color:var(--muted)">${esc(u.person||"")}</span>${u.gap?' <span class="badge b-red">gap</span>':""}</div>`).join("")+`</div>`;}
+  div.innerHTML=h;}
+
+/* ---------- Intel: one rich card per entity, expandable per-source sections ---------- */
+function renderIntelCards(div,db){
+  const rows=db.intel||[];
+  const casesByEntity={};(((db.cases||{}).customers)||[]).forEach(c=>casesByEntity[c.name||c.customer]=c);
+  const upd=db.intelUpdated||"";
+  const hCol=h=>({GREEN:"var(--ok)",AMBER:"var(--warn)",RED:"var(--red)"}[(h||"").toUpperCase()]||"var(--muted)");
+  const sect=(icon,label,src,arr,empty)=>{
+    const items=(arr||[]).filter(Boolean);
+    const stat=src?`<span style="font-size:.64rem;color:var(--muted);font-weight:400"> · ${esc(src)}</span>`:"";
+    return `<details style="margin-top:7px"><summary style="cursor:pointer;font-size:.76rem;font-weight:600;color:var(--text)">${icon} ${label} <span style="color:var(--accent)">(${items.length})</span>${stat}</summary>`+
+      (items.length?`<ul style="margin:5px 0 2px;padding-left:17px;font-size:.76rem;line-height:1.55;color:var(--muted)">${items.map(x=>`<li>${typeof x==="string"?esc(x):(x.link?`<a href="${esc(x.link)}" target="_blank">${esc(x.text||x.id||"")}</a>`:esc(x.text||x.id||""))}${x.meta?` <span style="color:var(--muted)">— ${esc(x.meta)}</span>`:""}</li>`).join("")}</ul>`
+        :`<div style="font-size:.72rem;color:var(--muted);margin:5px 0 2px;padding-left:4px">${esc(empty||"No signal in the last window.")}</div>`)+`</details>`;
+  };
+  let h=`<div class="banner"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+    <div><h3 style="margin:0;font-size:.9rem">🧭 Entity Intel</h3>
+    <div style="font-size:.7rem;color:var(--muted);margin-top:3px">Auto-synthesised from your sources. ${upd?"Last refresh "+esc(upd):"Awaiting first refresh."}</div></div>
+    <button class="btn sm" onclick="alert('Intel refresh runs as a daily job. See cron/refresh_job.md')">🔄 Refresh intel now</button></div></div>`;
+  if(!rows.length){div.innerHTML=h+`<div class="empty">No entities configured.</div>`;return;}
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">`;
+  rows.forEach(i=>{
+    const cc=casesByEntity[i.entity||i.customer];
+    const openTxt=i.cases!=null?i.cases:(cc?`${cc.windows?.["30d"]?.total??0} (30d)`:"—");
+    const chi=(i.chi!=null&&i.chi!=="")?i.chi:"—";const health=(i.health||"").toUpperCase();
+    const dot=`<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${hCol(health)};margin-right:5px"></span>`;
+    h+=`<div class="card" style="border-top:4px solid ${hCol(health)}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+        <h3 style="margin:0;font-size:.92rem">${dot}${esc(i.entity||i.customer)}</h3>${i.role?roleBadge(i.role):""}</div>
+      <div style="display:flex;gap:14px;margin-top:7px;font-size:.74rem;color:var(--muted);flex-wrap:wrap">
+        <span>Health <strong style="color:var(--text)">${esc(String(chi))}</strong></span>
+        <span>Open <strong style="color:var(--text)">${esc(String(openTxt))}</strong></span>
+        ${i.cadence?.next?`<span>Next <strong style="color:var(--text)">${esc(i.cadence.next)}</strong></span>`:""}
+      </div>`;
+    if(i.summary)h+=`<div style="margin-top:8px;font-size:.78rem;line-height:1.5;background:var(--card2);border-radius:8px;padding:8px 10px">${esc(i.summary)}</div>`;
+    let caseItems=(i.caseList||[]).slice();
+    if(!caseItems.length&&cc&&cc.topServices)caseItems=cc.topServices.slice(0,5).map(s=>({text:s.service,meta:`${s.total} YTD`}));
+    h+=sect("🎫","Cases",i.sources?.cases||(cc?"metrics":""),caseItems,"No case data yet.");
+    h+=sect("📨","Tickets",i.sources?.tickets,i.tickets,"No tickets in-window.");
+    h+=sect("📋","Tasks",i.sources?.tasks,i.tasks,"No open tasks.");
+    h+=sect("💬","Messages",i.sources?.messages,i.messages,"No notable activity.");
+    h+=sect("📧","Email / Meetings",i.sources?.email,i.email,"No meeting summaries.");
+    if((i.risks||[]).length)h+=sect("⚠️","Risks & Blockers","",i.risks,"");
+    if((i.highlights||[]).length)h+=sect("✨","Highlights","",i.highlights,"");
+    h+=`<div style="font-size:.64rem;color:var(--muted);margin-top:9px;border-top:1px solid var(--border);padding-top:6px">${i.updated?"intel "+esc(i.updated):"not yet refreshed"}</div></div>`;
+  });
+  h+=`</div>`;div.innerHTML=h;
+}
+
+/* ---------- Risks (aggregated register) ---------- */
+function renderRiskRegister(div,db){
+  const rows=[];(db.intel||[]).forEach(i=>(i.risks||[]).forEach(t=>rows.push({entity:i.entity||i.customer,text:typeof t==="string"?t:t.text})));
+  (db.risks||[]).forEach(r=>rows.push(r));
+  if(!rows.length){div.innerHTML=`<div class="empty">No risks yet — they populate from Intel risks and a manual list.</div>`;return;}
+  rows.forEach(x=>{const sm=String(x.text).match(/Sev[-\s]?(\d(?:\.\d)?)|P(\d)/i);x.sev=sm?parseFloat(sm[1]||sm[2]):null;});
+  rows.sort((a,b)=>((a.sev||9)-(b.sev||9))||String(a.entity).localeCompare(String(b.entity)));
+  let h=`<div class="sub" style="margin-bottom:8px">${rows.length} open risk(s), sorted by severity.</div>`;
+  h+=`<table><thead><tr><th>Sev</th><th>Entity</th><th>Risk</th></tr></thead><tbody>`;
+  rows.forEach(x=>{const sv=x.sev!=null?`<span class="badge" style="background:${sevColor(x.sev)};color:#fff">Sev${x.sev}</span>`:`<span class="badge b-grey">—</span>`;
+    h+=`<tr><td style="white-space:nowrap">${sv}</td><td style="white-space:nowrap">${esc(x.entity)}</td><td style="font-size:.78rem">${esc(x.text)}</td></tr>`;});
+  h+=`</tbody></table>`;div.innerHTML=h;
+}
+
+/* ---------- Links ---------- */
+function renderLinks(div,db){const rows=db.links||[];const fields=["label","url","icon"];const fjson=JSON.stringify(fields).replace(/"/g,'&quot;');
+  let h=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn sm" onclick="openModalCustom('links',${fjson})">+ Add</button></div><div style="display:flex;flex-wrap:wrap">`;
+  h+=rows.map((r,i)=>`<a class="pill" href="${esc(r.url)}" target="_blank">${esc(r.icon||"🔗")} ${esc(r.label)}</a>`).join("")||`<div class="empty">No links yet.</div>`;
+  h+=`</div>`;div.innerHTML=h;}
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>
