@@ -96,9 +96,9 @@ th:hover{color:var(--text)}tr:last-child td{border-bottom:none}tr:hover td{backg
 </div></div>
 
 <!-- ⚠️ cache-bust LOCKSTEP: this ?v= MUST equal DATA_VERSION below. Bump both together. -->
-<script src="dashboard-data.js?v=1"></script>
+<script src="dashboard-data.js?v=2"></script>
 <script>
-const DB="ops_dashboard_v1", DATA_VERSION=1;   // ⚠️ keep DATA_VERSION == the ?v= on the data script above
+const DB="ops_dashboard_v1", DATA_VERSION=2;   // ⚠️ keep DATA_VERSION == the ?v= on the data script above
 
 /* ---------- persistence (localStorage, re-seedable from SEED_DATA) ---------- */
 function load(){const v=localStorage.getItem(DB+"_ver");if(!v||+v<DATA_VERSION){localStorage.removeItem(DB);localStorage.setItem(DB+"_ver",DATA_VERSION);}

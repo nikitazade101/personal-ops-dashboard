@@ -54,9 +54,9 @@ const SEED_DATA = {
 
   /* -- My Tickets: assigned to the owner (rewritten by refresh job) --------- */
   tickets: [
-    { id:"TCK-2001", title:"Post-incident review for Entity Alpha", entity:"Entity Alpha", sev:"3", status:"open",    due:"2026-10-12" },
-    { id:"TCK-2002", title:"Capacity planning follow-up",            entity:"Entity Bravo", sev:"4", status:"pending", due:"2026-10-15" }
-  ],
+
+],
+ticketsUpdated: "2026-10-09T13:49:33+00:00",
 
   /* -- Trainings: manual list ---------------------------------------------- */
   trainings: [
@@ -107,39 +107,10 @@ const SEED_DATA = {
    * Each row: health GREEN|AMBER|RED, chi (score), summary (one-liner),
    * cadence {last,next,prep}, and per-source arrays of {text,id,link,meta}.
    * `sources` holds a short freshness label per source. */
-  intelUpdated: null,
+  intelUpdated: "2026-10-09T13:49:33+00:00",
   intel: [
-    { entity:"Entity Alpha", role:"Primary", health:"AMBER", chi:"72",
-      cadence:{last:"Mon", next:"next Mon", prep:"deck drafted"},
-      summary:"Steady but a recurring Sev3 config-drift pattern is open; capacity headroom tightening.",
-      tickets:[{text:"TCK-2001 post-incident review", id:"TCK-2001", meta:"open"}],
-      tasks:[{text:"Finalise guardrail rollout", meta:"due Fri"}],
-      messages:[{text:"Thread on latency spike", meta:"#team-alpha 2d"}],
-      email:[{text:"Quarterly sync summary", meta:"8 Oct"}],
-      risks:["Sev3 config drift recurring — guardrail in progress"],
-      highlights:["30% QoQ incident reduction"],
-      caseList:[],
-      sources:{cases:"metrics 8 Oct", tickets:"2 tickets", tasks:"3 tasks", messages:"12 msgs", email:"1 summary"},
-      updated:null },
-    { entity:"Entity Bravo", role:"Secondary", health:"GREEN", chi:"84",
-      cadence:{last:"Wed", next:"next Wed", prep:""},
-      summary:"Healthy. Analytics workload stable; one capacity follow-up in flight.",
-      tickets:[{text:"TCK-2002 capacity follow-up", id:"TCK-2002", meta:"pending"}],
-      tasks:[], messages:[{text:"Routine status update", meta:"#team-bravo 1d"}], email:[],
-      risks:[], highlights:["Clean quarter, zero Sev1/Sev2"],
-      caseList:[], sources:{cases:"metrics 8 Oct", tickets:"1 ticket", messages:"4 msgs"}, updated:null },
-    { entity:"Entity Charlie", role:"Owner", health:"AMBER", chi:"68",
-      cadence:{last:"Fri", next:"this Fri", prep:"agenda pending"},
-      summary:"Platform migration mid-flight; one blocker awaiting a decision.",
-      tickets:[], tasks:[{text:"Confirm migration cutover window", meta:"blocker"}], messages:[], email:[],
-      risks:["Cutover window undecided — slipping the plan"], highlights:[],
-      caseList:[], sources:{cases:"metrics 8 Oct", tasks:"1 task"}, updated:null },
-    { entity:"Entity Delta", role:"Standby", health:"GREEN", chi:"80",
-      cadence:{last:"—", next:"", prep:""},
-      summary:"Quiet. Low case volume, no open risks.",
-      tickets:[], tasks:[], messages:[], email:[], risks:[], highlights:[],
-      caseList:[], sources:{cases:"metrics 8 Oct"}, updated:null }
-  ],
+
+],
 
   /* -- Manual extra risks (merged with Intel risks on the Risks tab) ------- */
   risks: [
