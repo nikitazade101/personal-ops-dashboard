@@ -56,7 +56,7 @@ const SEED_DATA = {
   tickets: [
 
 ],
-ticketsUpdated: "2026-11-24T18:21:51+00:00",
+ticketsUpdated: "2026-11-25T17:39:03+00:00",
 
   /* -- Trainings: manual list ---------------------------------------------- */
   trainings: [
@@ -107,7 +107,7 @@ ticketsUpdated: "2026-11-24T18:21:51+00:00",
    * Each row: health GREEN|AMBER|RED, chi (score), summary (one-liner),
    * cadence {last,next,prep}, and per-source arrays of {text,id,link,meta}.
    * `sources` holds a short freshness label per source. */
-  intelUpdated: "2026-11-24T18:21:51+00:00",
+  intelUpdated: "2026-11-25T17:39:03+00:00",
   intel: [
 
 ],
